@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
-
+// Register a new user
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
     try {
@@ -19,7 +19,7 @@ const registerUser = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
+//login
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -33,7 +33,7 @@ const loginUser = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
+// Get user profile
 const getProfile = async (req, res) => {
     try {
       const user = await User.findById(req.user.id);
