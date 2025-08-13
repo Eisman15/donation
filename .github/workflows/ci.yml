@@ -1,28 +1,75 @@
-name: CI
+name: Backend CI
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  test:
+    name: Run Tests
+    # Match the runner's labels exactly; or just use 'self-hosted'
+    runs-on: [self-hosted, Linux, X64]
 
-        steps:
-        - name: Checkout code
-            uses: actions/checkout@v2
+    strategy:
+      matrix:
+        node-version: [22]
 
-        - name: Set up Node.js
-            uses: actions/setup-node@v2
-            with:
-                node-version: '14'
+    # Use env (not 'environment') to expose secrets to steps in this job
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PORT: ${{ secrets.PORT }}
 
-        - name: Install dependencies
-            run: npm install
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Run tests
-            run: npm test
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'  # if you use yarn.lock
+
+      - name: Show secrets are present (not printing values)
+        run: |
+          [ -n "$MONGO_URI" ] && echo "MONGO_URI present" || echo "MONGO_URI missing"
+          [ -n "$JWT_SECRET" ] && echo "JWT_SECRET present" || echo "JWT_SECRET missing"
+          [ -n "$PORT" ] && echo "PORT present" || echo "PORT missing"
+
+      # optional: ensure yarn is available (or switch to npm consistently)
+      - name: Enable corepack (for Yarn)
+        run: corepack enable || true
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          yarn install --frozen-lockfile || npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          df -h
+          rm -rf ./build
+          yarn install --frozen-lockfile || npm ci
+          yarn build || npm run build
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: |
+          npm test || yarn test
+
+      # If you really need pm2 here, keep in mind it runs inside the ephemeral job
+      # and won't manage your long-lived services outside the job.
+      - name: Prepare .env for backend (if needed)
+        working-directory: ./backend
+        run: |
+          printf "MONGO_URI=%s\nJWT_SECRET=%s\nPORT=%s\n" "$MONGO_URI" "$JWT_SECRET" "$PORT" > .env
+
+      - name: Stop any pm2 processes (optional)
+        run: pm2 stop all || true
+
+      - name: Start pm2 processes (optional)
+        run: pm2 start ecosystem.config.js || pm2 start all || true
