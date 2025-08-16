@@ -1,17 +1,28 @@
 const mongoose = require('mongoose');
 
 const causeSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    goalAmount: { type: Number, required: true },
-    currentAmount: { type: Number, default: 0 },
-    image: { type: String },
-    category: { type: String, required: true },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    isActive: { type: Boolean, default: true },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  targetAmount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: ['active', 'completed', 'paused', 'cancelled'],
+    default: 'active'
+  }
+}, {
+  timestamps: true
 });
-
 
 module.exports = mongoose.model('Cause', causeSchema);
