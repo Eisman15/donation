@@ -31,6 +31,8 @@ const Navbar = () => {
             >
               Home
             </Link>
+            
+            {/* Public can view causes */}
             <Link 
               to="/causes" 
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -39,8 +41,10 @@ const Navbar = () => {
             >
               Browse Causes
             </Link>
+            
             {user ? (
               <>
+                {/* All authenticated users can view profile */}
                 <Link 
                   to="/profile" 
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -49,18 +53,50 @@ const Navbar = () => {
                 >
                   My Profile
                 </Link>
-                {user.role === 'admin' && (
+                
+                {/* Donor-specific navigation */}
+                {(user.role === 'donor' || user.role === 'admin') && (
                   <Link 
-                    to="/donors" 
+                    to="/donor-profile" 
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive('/donors') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
+                      isActive('/donor-profile') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
                     }`}
                   >
-                    Manage Donors
+                    Donor Profile
                   </Link>
                 )}
+                
+                {/* Admin-only navigation */}
+                {user.role === 'admin' && (
+                  <>
+                    <Link 
+                      to="/donors" 
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/donors') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
+                      }`}
+                    >
+                      Manage Donors
+                    </Link>
+                    <Link 
+                      to="/admin-causes" 
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/admin-causes') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
+                      }`}
+                    >
+                      Manage Causes
+                    </Link>
+                  </>
+                )}
+                
                 <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-blue-500">
-                  <span className="text-sm text-blue-200">Welcome, {user.name || user.email}</span>
+                  <span className="text-sm text-blue-200">
+                    Welcome, {user.name || user.email}
+                    {user.role && (
+                      <span className="ml-2 px-2 py-1 text-xs bg-blue-800 rounded-full">
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </span>
+                    )}
+                  </span>
                   <button
                     onClick={handleLogout}
                     className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"

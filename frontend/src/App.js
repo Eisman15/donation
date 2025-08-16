@@ -6,6 +6,8 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Causes from './pages/Causes';
 import AllDonors from './pages/AllDonors';
+import DonorProfilePage from './pages/DonorProfilePage';
+import AdminCauses from './pages/AdminCauses';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/causes" element={<Causes />} />
         <Route path="/donors" element={<AllDonors />} />
+        <Route path="/donor-profile" element={<DonorProfilePage />} />
+        <Route path="/admin-causes" element={<AdminCauses />} />
       </Routes>
     </Router>
   );
