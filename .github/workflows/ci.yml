@@ -10,14 +10,12 @@ on:
 jobs:
   test:
     name: Run Tests
-    # Match the runner's labels exactly; or just use 'self-hosted'
     runs-on: [self-hosted, Linux, X64]
 
     strategy:
       matrix:
         node-version: [22]
 
-    # Use env (not 'environment') to expose secrets to steps in this job
     env:
       MONGO_URI: ${{ secrets.MONGO_URI }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -31,7 +29,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'  # if you use yarn.lock
+          cache: 'yarn' 
 
       - name: Show secrets are present (not printing values)
         run: |
@@ -39,7 +37,6 @@ jobs:
           [ -n "$JWT_SECRET" ] && echo "JWT_SECRET present" || echo "JWT_SECRET missing"
           [ -n "$PORT" ] && echo "PORT present" || echo "PORT missing"
 
-      # optional: ensure yarn is available (or switch to npm consistently)
       - name: Enable corepack (for Yarn)
         run: corepack enable || true
 
@@ -61,8 +58,6 @@ jobs:
         run: |
           npm test || yarn test
 
-      # If you really need pm2 here, keep in mind it runs inside the ephemeral job
-      # and won't manage your long-lived services outside the job.
       - name: Prepare .env for backend (if needed)
         working-directory: ./backend
         run: |

@@ -26,10 +26,6 @@ const Causes = () => {
     fetchCauses();
   }, []);
 
-  useEffect(() => {
-    filterAndSortCauses();
-  }, [causes, selectedCategory, sortBy, searchTerm]);
-
   const fetchCauses = async () => {
     try {
       const response = await axiosInstance.get('/api/causes');
@@ -41,38 +37,46 @@ const Causes = () => {
     }
   };
 
-  const filterAndSortCauses = () => {
-    let filtered = [...causes];
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(cause => 
-        cause.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-
-    if (searchTerm) {
-      filtered = filtered.filter(cause =>
-        cause.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cause.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    switch (sortBy) {
-      case 'progress':
-        filtered.sort((a, b) => calculateProgress(b.currentAmount, b.goalAmount) - calculateProgress(a.currentAmount, a.goalAmount));
-        break;
-      case 'amount':
-        filtered.sort((a, b) => b.goalAmount - a.goalAmount);
-        break;
-      case 'alphabetical':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      default: // newest
-        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-
-    setFilteredCauses(filtered);
+  const calculateProgress = (current, goal) => {
+    return Math.min((current / goal) * 100, 100);
   };
+
+  useEffect(() => {
+    const filterAndSortCauses = () => {
+      let filtered = [...causes];
+
+      if (selectedCategory !== 'all') {
+        filtered = filtered.filter(cause => 
+          cause.category.toLowerCase() === selectedCategory.toLowerCase()
+        );
+      }
+
+      if (searchTerm) {
+        filtered = filtered.filter(cause =>
+          cause.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          cause.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      switch (sortBy) {
+        case 'progress':
+          filtered.sort((a, b) => calculateProgress(b.currentAmount, b.goalAmount) - calculateProgress(a.currentAmount, a.goalAmount));
+          break;
+        case 'amount':
+          filtered.sort((a, b) => b.goalAmount - a.goalAmount);
+          break;
+        case 'alphabetical':
+          filtered.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        default:
+          filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+
+      setFilteredCauses(filtered);
+    };
+
+    filterAndSortCauses();
+  }, [causes, selectedCategory, sortBy, searchTerm]);
 
   const handleCreateCause = async (e) => {
     e.preventDefault();
@@ -127,10 +131,6 @@ const Causes = () => {
     } catch (error) {
       alert('Failed to process donation.');
     }
-  };
-
-  const calculateProgress = (current, goal) => {
-    return Math.min((current / goal) * 100, 100);
   };
 
   if (loading) {

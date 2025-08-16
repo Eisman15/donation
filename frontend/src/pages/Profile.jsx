@@ -3,28 +3,26 @@ import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
 const Profile = () => {
-  const { user } = useAuth(); // Access user token from context
+  const { user } = useAuth(); 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    // OLD: university: '',
     affiliation: '',
     address: '',
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch profile data from the backend
     const fetchProfile = async () => {
       setLoading(true);
       try {
         const response = await axiosInstance.get('/api/auth/profile', {
           headers: { Authorization: `Bearer ${user.token}` },
         });
+        
         setFormData({
           name: response.data.name,
           email: response.data.email,
-          // OLD: university: response.data.university || '',
           affiliation: response.data.affiliation || '',
           address: response.data.address || '',
         });

@@ -13,4 +13,5 @@ const causeSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
+
 module.exports = mongoose.model('Cause', causeSchema);
