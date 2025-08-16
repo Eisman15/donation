@@ -43,22 +43,20 @@ const Profile = () => {
       await axiosInstance.put('/api/auth/profile', formData, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
-      alert('Profile updated successfully!');
+      alert('Profile updated!');
     } catch (error) {
-      alert('Failed to update profile. Please try again.');
+      alert('Update failed');
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return <div className="text-center mt-20">Loading...</div>;
-  }
+  if (loading) return <div className="p-20 text-center">Loading...</div>;
 
   return (
     <div className="max-w-md mx-auto mt-20">
-      <form onSubmit={handleSubmit} className="bg-white p-6 shadow-md rounded">
-        <h1 className="text-2xl font-bold mb-4 text-center">Your Profile</h1>
+      <form onSubmit={handleSubmit} className="bg-white p-6 shadow rounded">
+        <h1 className="text-2xl font-bold mb-4">Profile</h1>
         <input
           type="text"
           placeholder="Name"
@@ -88,7 +86,7 @@ const Profile = () => {
           className="w-full mb-4 p-2 border rounded"
         />
         <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
-          {loading ? 'Updating...' : 'Update Profile'}
+          {loading ? 'Saving...' : 'Update'}
         </button>
       </form>
     </div>

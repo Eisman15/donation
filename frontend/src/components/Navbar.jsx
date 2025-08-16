@@ -23,102 +23,50 @@ const Navbar = () => {
           </Link>
           
           <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
-              }`}
-            >
+            <Link to="/" className={isActive('/') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>
               Home
             </Link>
-            
-            {/* Public can view causes */}
-            <Link 
-              to="/causes" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/causes') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
-              }`}
-            >
-              Browse Causes
+            <Link to="/causes" className={isActive('/causes') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>
+              Causes
             </Link>
             
             {user ? (
               <>
-                {/* All authenticated users can view profile */}
-                <Link 
-                  to="/profile" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/profile') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
-                  }`}
-                >
-                  My Profile
+                <Link to="/profile" className={isActive('/profile') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>
+                  Profile
                 </Link>
                 
-                {/* Donor-specific navigation */}
                 {(user.role === 'donor' || user.role === 'admin') && (
-                  <Link 
-                    to="/donor-profile" 
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive('/donor-profile') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
-                    }`}
-                  >
-                    Donor Profile
+                  <Link to="/donor-profile" className={isActive('/donor-profile') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>
+                    Donor
                   </Link>
                 )}
                 
-                {/* Admin-only navigation */}
                 {user.role === 'admin' && (
                   <>
-                    <Link 
-                      to="/donors" 
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        isActive('/donors') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
-                      }`}
-                    >
-                      Manage Donors
+                    <Link to="/donors" className={isActive('/donors') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>
+                      All Donors
                     </Link>
-                    <Link 
-                      to="/admin-causes" 
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        isActive('/admin-causes') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
-                      }`}
-                    >
-                      Manage Causes
+                    <Link to="/admin-causes" className={isActive('/admin-causes') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>
+                      Admin
                     </Link>
                   </>
                 )}
                 
                 <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-blue-500">
-                  <span className="text-sm text-blue-200">
-                    Welcome, {user.name || user.email}
-                    {user.role && (
-                      <span className="ml-2 px-2 py-1 text-xs bg-blue-800 rounded-full">
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </span>
-                    )}
+                  <span className="text-sm">
+                    {user.name} 
+                    {user.role && <span className="ml-2 px-2 py-1 text-xs bg-blue-800 rounded">{user.role}</span>}
                   </span>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                  >
+                  <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm">
                     Logout
                   </button>
                 </div>
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link 
-                  to="/login" 
-                  className="px-4 py-2 text-sm font-medium hover:text-blue-200 transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Get Started
-                </Link>
+                <Link to="/login" className="px-4 py-2 hover:text-blue-200">Login</Link>
+                <Link to="/register" className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Register</Link>
               </div>
             )}
           </div>

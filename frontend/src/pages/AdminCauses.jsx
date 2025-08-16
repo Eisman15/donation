@@ -7,13 +7,8 @@ const AdminCauses = () => {
   const [causes, setCauses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [newCause, setNewCause] = useState({
-    title: '',
-    description: '',
-    targetAmount: '',
-    status: 'active'
-  });
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newCause, setNewCause] = useState({ title: '', description: '', targetAmount: '' });
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const fetchCauses = async () => {
@@ -35,104 +30,78 @@ const AdminCauses = () => {
     }
   }, [user]);
 
-  const handleCreateCause = async (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
     try {
       const response = await axiosInstance.post('/api/causes', newCause, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       setCauses([response.data, ...causes]);
-      setNewCause({ title: '', description: '', targetAmount: '', status: 'active' });
-      setShowCreateForm(false);
+      setNewCause({ title: '', description: '', targetAmount: '' });
+      setShowForm(false);
     } catch (error) {
-      alert('Failed to create cause. Please try again.');
+      alert('Failed to create cause');
     }
   };
 
-  const handleStatusUpdate = async (causeId, newStatus) => {
+  const updateStatus = async (id, status) => {
     try {
-      await axiosInstance.put(`/api/causes/${causeId}`, 
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      );
-      setCauses(causes.map(cause => 
-        cause._id === causeId ? { ...cause, status: newStatus } : cause
-      ));
+      await axiosInstance.put(`/api/causes/${id}`, { status }, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setCauses(causes.map(c => c._id === id ? { ...c, status } : c));
     } catch (error) {
-      alert('Failed to update cause status. Please try again.');
+      alert('Update failed');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading causes...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto mt-20 p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-20 text-center">Loading...</div>;
+  if (error) return <div className="p-20 text-center text-red-600">{error}</div>;
 
   return (
     <div className="max-w-6xl mx-auto mt-20 p-6">
       <div className="bg-white shadow-md rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Manage Causes</h1>
-            <p className="text-gray-600 mt-1">Create and manage fundraising causes</p>
-          </div>
+        <div className="p-6 border-b flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manage Causes</h1>
           <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
+            onClick={() => setShowForm(!showForm)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
           >
-            {showCreateForm ? 'Cancel' : 'Create New Cause'}
+            {showForm ? 'Cancel' : 'New Cause'}
           </button>
         </div>
         
-        {showCreateForm && (
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Cause</h3>
-            <form onSubmit={handleCreateCause} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {showForm && (
+          <div className="p-6 border-b bg-gray-50">
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <input
                   type="text"
-                  placeholder="Cause Title"
+                  placeholder="Title"
                   value={newCause.title}
                   onChange={(e) => setNewCause({ ...newCause, title: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="p-3 border rounded"
                   required
                 />
                 <input
                   type="number"
-                  placeholder="Target Amount ($)"
+                  placeholder="Target Amount"
                   value={newCause.targetAmount}
                   onChange={(e) => setNewCause({ ...newCause, targetAmount: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="p-3 border rounded"
                   required
-                  min="1"
                 />
               </div>
               <textarea
-                placeholder="Cause Description"
+                placeholder="Description"
                 value={newCause.description}
                 onChange={(e) => setNewCause({ ...newCause, description: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 border rounded"
                 rows="3"
                 required
               />
-              <button
-                type="submit"
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium transition-colors"
-              >
-                Create Cause
+              <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">
+                Create
               </button>
             </form>
           </div>
@@ -192,8 +161,8 @@ const AdminCauses = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <select
                         value={cause.status}
-                        onChange={(e) => handleStatusUpdate(cause._id, e.target.value)}
-                        className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500"
+                        onChange={(e) => updateStatus(cause._id, e.target.value)}
+                        className="border rounded px-2 py-1"
                       >
                         <option value="active">Active</option>
                         <option value="completed">Completed</option>

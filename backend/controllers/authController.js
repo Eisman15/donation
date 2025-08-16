@@ -10,38 +10,18 @@ const generateToken = (id, role) => {
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
     
-    // Validation of forms
-    const errors = {};
-    
-    if (!name || !name.trim()) {
-        errors.name = 'Name is required';
-    } else if (name.trim().length < 2) {
-        errors.name = 'Name must be at least 2 characters';
+    if (!name || !email || !password) {
+        return res.status(400).json({ message: 'All fields required' });
     }
     
-    if (!email || !email.trim()) {
-        errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.email = 'Please enter a valid email address. Try Again';
-    }
-    
-    if (!password) {
-        errors.password = 'Password is required. Try again';
-    } else if (password.length < 8) {
-        errors.password = 'Password must be at least 8 characters';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-        errors.password = 'Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number';
-    }
-    
-    if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ message: 'Validation failed', errors });
+    if (password.length < 6) {
+        return res.status(400).json({ message: 'Password too short' });
     }
     
     try {
         const userExists = await User.findOne({ email: email.toLowerCase() });
-        if (userExists) return res.status(400).json({ message: 'User already exists with this email address' });
+        if (userExists) return res.status(400).json({ message: 'User already exists' });
 
-        // with validation
         const user = await User.create({ 
             name: name.trim(), 
             email: email.toLowerCase().trim(), 
@@ -56,35 +36,18 @@ const registerUser = async (req, res) => {
             token: generateToken(user.id, user.role) 
         });
     } catch (error) {
-        // MongoDB check duplicate user error
         if (error.code === 11000) {
-            return res.status(400).json({ message: 'User already exists with this email address' });
+            return res.status(400).json({ message: 'User already exists' });
         }
-        res.status(500).json({ message: 'Server error during registration' });
+        res.status(500).json({ message: 'Registration failed' });
     }
 };
 
-//login
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     
-    // Validation
-    const errors = {};
-    
-    if (!email || !email.trim()) {
-        errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        errors.email = 'Please enter a valid email address';
-    }
-    
-    if (!password) {
-        errors.password = 'Password is required';
-    } else if (password.length < 6) {
-        errors.password = 'Password must be at least 6 characters';
-    }
-    
-    if (Object.keys(errors).length > 0) {
-        return res.status(400).json({ message: 'Validation failed', errors });
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password required' });
     }
     
     try {
@@ -98,10 +61,10 @@ const loginUser = async (req, res) => {
                 token: generateToken(user.id, user.role) 
             });
         } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+            res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server error during login' });
+        res.status(500).json({ message: 'Login failed' });
     }
 };
 

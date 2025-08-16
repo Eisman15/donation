@@ -31,36 +31,18 @@ const AllDonors = () => {
     }
   }, [user]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading donors...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-4xl mx-auto mt-20 p-6">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-20 text-center">Loading...</div>;
+  if (error) return <div className="p-20 text-center text-red-600">{error}</div>;
 
   return (
     <div className="max-w-6xl mx-auto mt-20 p-6">
       <div className="bg-white shadow-md rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">All Donors</h1>
-          <p className="text-gray-600 mt-1">Manage and view all registered donors</p>
+        <div className="p-6 border-b">
+          <h1 className="text-2xl font-bold">All Donors</h1>
         </div>
         
         {donors.length === 0 ? (
-          <div className="px-6 py-8 text-center text-gray-500">
-            No donors found.
-          </div>
+          <div className="p-8 text-center text-gray-500">No donors found</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

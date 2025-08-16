@@ -39,7 +39,7 @@ const DonorProfile = ({ onSubmit, onCancel, initialData = null, isEditMode = fal
       newErrors.lastName = 'Last name is required';
     }
 
-    if (formData.phone && !/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
+    if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
 
