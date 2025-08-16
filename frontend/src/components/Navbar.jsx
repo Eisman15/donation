@@ -49,6 +49,16 @@ const Navbar = () => {
                 >
                   My Profile
                 </Link>
+                {user.role === 'admin' && (
+                  <Link 
+                    to="/donors" 
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive('/donors') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
+                    }`}
+                  >
+                    Manage Donors
+                  </Link>
+                )}
                 <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-blue-500">
                   <span className="text-sm text-blue-200">Welcome, {user.name || user.email}</span>
                   <button

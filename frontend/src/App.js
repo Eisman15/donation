@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Causes from './pages/Causes';
+import AllDonors from './pages/AllDonors';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/causes" element={<Causes />} />
+        <Route path="/donors" element={<AllDonors />} />
       </Routes>
     </Router>
   );
