@@ -42,14 +42,6 @@ const Navbar = () => {
             {user ? (
               <>
                 <Link 
-                  to="/tasks" 
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/tasks') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
-                  }`}
-                >
-                  Manage Campaigns
-                </Link>
-                <Link 
                   to="/profile" 
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/profile') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
