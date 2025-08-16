@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
-// Register a new user
+// Register new user
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
     
@@ -66,15 +66,40 @@ const registerUser = async (req, res) => {
 //login
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
+    
+    // Validation
+    const errors = {};
+    
+    if (!email || !email.trim()) {
+        errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.email = 'Please enter a valid email address';
+    }
+    
+    if (!password) {
+        errors.password = 'Password is required';
+    } else if (password.length < 6) {
+        errors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ message: 'Validation failed', errors });
+    }
+    
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
         if (user && (await bcrypt.compare(password, user.password))) {
-            res.json({ id: user.id, name: user.name, email: user.email, token: generateToken(user.id) });
+            res.json({ 
+                id: user.id, 
+                name: user.name, 
+                email: user.email, 
+                token: generateToken(user.id) 
+            });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Server error during login' });
     }
 };
 
