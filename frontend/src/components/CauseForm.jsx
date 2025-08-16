@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createCause } from '../services/causeService';
 
 const CauseForm = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const CauseForm = ({ onSubmit, onCancel }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -54,13 +56,34 @@ const CauseForm = ({ onSubmit, onCancel }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit({
-        ...formData,
-        targetAmount: Number(formData.targetAmount)
-      });
+      setIsSubmitting(true);
+      try {
+        const causeData = {
+          ...formData,
+          targetAmount: Number(formData.targetAmount)
+        };
+        
+        const result = await createCause(causeData);
+        
+        if (onSubmit) {
+          onSubmit(result);
+        }
+        
+        setFormData({
+          title: '',
+          description: '',
+          targetAmount: '',
+          status: 'active'
+        });
+        
+      } catch (error) {
+        setErrors({ submit: error.message || 'Failed to create cause' });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -143,12 +166,19 @@ const CauseForm = ({ onSubmit, onCancel }) => {
         {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status}</p>}
       </div>
 
+      {errors.submit && (
+        <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {errors.submit}
+        </div>
+      )}
+
       <div className="flex gap-4">
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          disabled={isSubmitting}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create Cause
+          {isSubmitting ? 'Creating...' : 'Create Cause'}
         </button>
         {onCancel && (
           <button
