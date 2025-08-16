@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const DonorProfile = ({ onSubmit, onCancel }) => {
+const DonorProfile = ({ onSubmit, onCancel, initialData = null, isEditMode = false }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -13,6 +13,20 @@ const DonorProfile = ({ onSubmit, onCancel }) => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        firstName: initialData.personalInfo?.firstName || '',
+        lastName: initialData.personalInfo?.lastName || '',
+        phone: initialData.personalInfo?.phone || '',
+        isAnonymous: initialData.preferences?.isAnonymous || false,
+        emailNotifications: initialData.preferences?.emailNotifications !== false,
+        newsletter: initialData.preferences?.newsletter !== false,
+        preferredPaymentMethod: initialData.preferences?.preferredPaymentMethod || 'credit_card'
+      });
+    }
+  }, [initialData]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -55,7 +69,7 @@ const DonorProfile = ({ onSubmit, onCancel }) => {
       try {
         await onSubmit(formData);
       } catch (error) {
-        setErrors({ submit: error.message || 'Failed to create donor profile' });
+        setErrors({ submit: error.message || `Failed to ${isEditMode ? 'update' : 'create'} donor profile` });
       } finally {
         setIsSubmitting(false);
       }
@@ -63,7 +77,14 @@ const DonorProfile = ({ onSubmit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {isEditMode ? 'Edit Donor Profile' : 'Create Donor Profile'}
+        </h2>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -197,7 +218,7 @@ const DonorProfile = ({ onSubmit, onCancel }) => {
           disabled={isSubmitting}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
-          {isSubmitting ? 'Creating...' : 'Create Donor Profile'}
+          {isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Profile' : 'Create Donor Profile')}
         </button>
         {onCancel && (
           <button
@@ -209,7 +230,8 @@ const DonorProfile = ({ onSubmit, onCancel }) => {
           </button>
         )}
       </div>
-    </form>
+      </form>
+    </div>
   );
 };
 
