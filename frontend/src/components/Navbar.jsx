@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from './Logo';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -17,11 +18,19 @@ const Navbar = () => {
     <nav className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/causes" className="text-3xl font-bold tracking-tight hover:text-blue-200 transition-colors">
-            HELPWISE
+          <Link to="/" className="hover:opacity-80 transition-opacity">
+            <Logo className="h-8 w-auto" textClassName="text-2xl font-bold" />
           </Link>
           
           <div className="hidden md:flex items-center space-x-8">
+            <Link 
+              to="/" 
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/') ? 'bg-blue-800 text-white' : 'hover:bg-blue-500'
+              }`}
+            >
+              Home
+            </Link>
             <Link 
               to="/causes" 
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
