@@ -46,6 +46,15 @@ const Causes = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {causes.map((cause) => (
             <div key={cause._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              {cause.image && (
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={cause.image} 
+                    alt={cause.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <div className="p-6">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-xl font-semibold">{cause.title}</h3>

@@ -20,6 +20,10 @@ const causeSchema = new mongoose.Schema({
     required: true,
     enum: ['active', 'completed', 'paused', 'cancelled'],
     default: 'active'
+  },
+  image: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true

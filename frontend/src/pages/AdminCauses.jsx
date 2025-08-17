@@ -137,9 +137,18 @@ const AdminCauses = () => {
                 {causes.map((cause) => (
                   <tr key={cause._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{cause.title}</div>
-                        <div className="text-sm text-gray-500">{(cause.description || '').substring(0, 100)}...</div>
+                      <div className="flex items-center">
+                        {cause.image && (
+                          <img 
+                            src={cause.image} 
+                            alt={cause.title}
+                            className="w-12 h-12 object-cover rounded mr-3"
+                          />
+                        )}
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{cause.title}</div>
+                          <div className="text-sm text-gray-500">{(cause.description || '').substring(0, 100)}...</div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
