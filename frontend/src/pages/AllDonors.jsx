@@ -31,6 +31,17 @@ const AllDonors = () => {
     }
   }, [user]);
 
+  const deleteDonor = async (id) => {
+    if (!window.confirm('Delete this donor?')) return;
+    try {
+      await axiosInstance.delete(`/api/donors/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      setDonors((prev) => prev.filter((d) => d._id !== id));
+    } catch (error) {
+      setError(error?.response?.data?.message || 'Failed to delete donor.');
+    }
+  };
 
   if (loading) {
     return (
@@ -60,7 +71,6 @@ const AllDonors = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-
         <div>
           {donors.length === 0 ? (
             <div className="text-center py-12 bg-white border border-gray-300">
@@ -73,23 +83,33 @@ const AllDonors = () => {
                 <div key={donor._id} className="bg-white border border-gray-300 p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-blue-500 text-white flex items-center justify-center font-bold">
-                      {donor.personalInfo?.firstName?.charAt(0) || donor.user?.name?.charAt(0) || 'U'}
+                      {donor.personalInfo?.firstName?.charAt(0) ||
+                        donor.user?.name?.charAt(0) ||
+                        'U'}
                     </div>
                     <div>
                       <h3 className="font-bold">
-                        {donor.personalInfo?.firstName && donor.personalInfo?.lastName 
+                        {donor.personalInfo?.firstName && donor.personalInfo?.lastName
                           ? `${donor.personalInfo.firstName} ${donor.personalInfo.lastName}`
-                          : donor.user?.name || 'N/A'
-                        }
+                          : donor.user?.name || 'N/A'}
                       </h3>
                       <p className="text-sm text-gray-600">{donor.user?.email}</p>
                     </div>
                   </div>
 
-
                   <div className="border-t border-gray-200 pt-3">
                     <div className="text-xs text-gray-500">
                       Joined {new Date(donor.createdAt).toLocaleDateString()}
+                    </div>
+
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={() => deleteDonor(donor._id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded transition-colors"
+                        title="Delete donor"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -97,7 +117,7 @@ const AllDonors = () => {
             </div>
           )}
         </div>
-        
+
         <div className="mt-6 text-center text-sm text-gray-600">
           {donors.length} donors available
         </div>
