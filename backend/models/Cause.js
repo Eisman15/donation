@@ -18,7 +18,7 @@ const causeSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-    enum: ['active', 'completed', 'paused', 'cancelled'],
+   
     default: 'active'
   },
   image: {

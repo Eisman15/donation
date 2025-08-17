@@ -1,30 +1,47 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
 const AdminCauses = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [causes, setCauses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [newCause, setNewCause] = useState({ title: '', description: '', targetAmount: '' });
   const [showForm, setShowForm] = useState(false);
+  const [newCause, setNewCause] = useState({
+    title: '',
+    description: '',
+    targetAmount: '',
+    image: '',
+  });
+
+  const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
+  const asNumber = (v) => {
+    const n = Number.parseFloat(v);
+    return Number.isFinite(n) ? n : 0;
+  };
 
   useEffect(() => {
+    if (!user) return;
     const fetchCauses = async () => {
       try {
-        const response = await axiosInstance.get('/api/causes');
-        setCauses(response.data);
-      } catch (error) {
-        setError('Failed to fetch causes. Please try again.');
+        const res = await axiosInstance.get('/api/causes', { headers: authHeader });
+        setCauses(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        if (err.response?.status === 403) {
+          setError('Access denied. Admin privileges required.');
+        } else {
+          setError(err?.response?.data?.message || 'Failed to fetch causes. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
     };
-
-    if (user?.role === 'admin') {
-      fetchCauses();
-    } else {
+    if (user.role === 'admin') fetchCauses();
+    else {
       setError('Access denied. Admin privileges required.');
       setLoading(false);
     }
@@ -32,173 +49,186 @@ const AdminCauses = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    setError('');
+    const payload = {
+      title: newCause.title.trim(),
+      description: newCause.description.trim(),
+      image: newCause.image?.trim() || undefined,
+      targetAmount: asNumber(newCause.targetAmount),
+    };
     try {
-      const response = await axiosInstance.post('/api/causes', newCause, {
-        headers: { Authorization: `Bearer ${user?.token}` },
-      });
-      setCauses([response.data, ...causes]);
-      setNewCause({ title: '', description: '', targetAmount: '' });
+      const res = await axiosInstance.post('/api/causes', payload, { headers: authHeader });
+      setCauses((prev) => [res.data, ...prev]);
+      setNewCause({ title: '', description: '', targetAmount: '', image: '' });
       setShowForm(false);
-    } catch (error) {
-      alert('Failed to create cause');
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to create cause.');
     }
   };
 
-  const updateStatus = async (id, status) => {
+  const handleEdit = (cause) => {
+    navigate(`/admin/causes/${cause._id}/edit`, { state: { cause } });
+  };
+
+  const deleteCause = async (id) => {
+    if (!window.confirm('Delete this cause?')) return;
     try {
-      await axiosInstance.put(`/api/causes/${id}`, { status }, {
-        headers: { Authorization: `Bearer ${user?.token}` }
-      });
-      setCauses(causes.map(c => c._id === id ? { ...c, status } : c));
-    } catch (error) {
-      alert('Update failed');
+      await axiosInstance.delete(`/api/causes/${id}`, { headers: authHeader });
+      setCauses((prev) => prev.filter((c) => c._id !== id));
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to delete cause.');
     }
   };
 
-  if (loading) return <div className="p-20 text-center">Loading...</div>;
-  if (error) return <div className="p-20 text-center text-red-600">{error}</div>;
+  if (loading) return <div className="p-20 text-center">Loading causes...</div>;
 
   return (
-    <div className="max-w-6xl mx-auto mt-20 p-6">
-      <div className="bg-white shadow-md rounded-lg">
-        <div className="p-6 border-b flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Manage Causes</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white">
+        <div className="container mx-auto px-4 py-16">
+          <div className="text-center">
+            <h1 className="text-5xl font-bold mb-4">Manage Causes</h1>
+            <p className="text-xl mb-8 max-w-2xl mx-auto">
+              Create, edit, and remove causes shown to donors.
+            </p>
+            <p className="text-lg">Total Causes: {causes.length}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-end mb-6">
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            onClick={() => setShowForm((s) => !s)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
           >
             {showForm ? 'Cancel' : 'New Cause'}
           </button>
         </div>
-        
+
         {showForm && (
-          <div className="p-6 border-b bg-gray-50">
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Title"
-                  value={newCause.title}
-                  onChange={(e) => setNewCause({ ...newCause, title: e.target.value })}
-                  className="p-3 border rounded"
+          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <div className="p-6">
+              <form onSubmit={handleCreate}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={newCause.title}
+                    onChange={(e) => setNewCause((c) => ({ ...c, title: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                  <input
+                    type="number"
+                    placeholder="Target Amount"
+                    value={newCause.targetAmount}
+                    onChange={(e) => setNewCause((c) => ({ ...c, targetAmount: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                  <input
+                    type="url"
+                    placeholder="Image URL (optional)"
+                    value={newCause.image}
+                    onChange={(e) => setNewCause((c) => ({ ...c, image: e.target.value }))}
+                    className="w-full p-2 border rounded md:col-span-2"
+                  />
+                </div>
+                <textarea
+                  placeholder="Description"
+                  value={newCause.description}
+                  onChange={(e) => setNewCause((c) => ({ ...c, description: e.target.value }))}
+                  className="w-full p-2 border rounded mb-4"
+                  rows={3}
                   required
                 />
-                <input
-                  type="number"
-                  placeholder="Target Amount"
-                  value={newCause.targetAmount}
-                  onChange={(e) => setNewCause({ ...newCause, targetAmount: e.target.value })}
-                  className="p-3 border rounded"
-                  required
-                />
-              </div>
-              <textarea
-                placeholder="Description"
-                value={newCause.description}
-                onChange={(e) => setNewCause({ ...newCause, description: e.target.value })}
-                className="w-full p-3 border rounded"
-                rows="3"
-                required
-              />
-              <button type="submit" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded">
-                Create
-              </button>
-            </form>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
-        
+
         {causes.length === 0 ? (
-          <div className="px-6 py-8 text-center text-gray-500">
-            No causes found. Create your first cause!
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">📋</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">No causes available</h3>
+            <p className="text-gray-500 text-lg">Create your first cause to get started.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cause
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Target Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {causes.map((cause) => (
-                  <tr key={cause._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        {cause.image && (
-                          <img 
-                            src={cause.image} 
-                            alt={cause.title}
-                            className="w-12 h-12 object-cover rounded mr-3"
-                          />
-                        )}
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{cause.title}</div>
-                          <div className="text-sm text-gray-500">{(cause.description || '').substring(0, 100)}...</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${(cause.targetAmount || cause.goalAmount || 0).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        cause.status === 'active' ? 'bg-green-100 text-green-800' :
-                        cause.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                        cause.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {(cause.status || 'unknown').charAt(0).toUpperCase() + (cause.status || 'unknown').slice(1)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {causes.map((cause) => (
+              <div key={cause._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                {cause.image && (
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={cause.image}
+                      alt={cause.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-semibold">{cause.title}</h3>
+                  </div>
+
+                  <p className="text-gray-600 mb-4">
+                    {cause.description?.length > 160
+                      ? cause.description.slice(0, 160) + '…'
+                      : cause.description || ''}
+                  </p>
+
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Target Amount</span>
+                      <span className="font-semibold">
+                        ${(cause.targetAmount || cause.goalAmount || 0).toLocaleString()}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {cause.createdAt ? new Date(cause.createdAt).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <select
-                        value={cause.status || 'active'}
-                        onChange={(e) => updateStatus(cause._id, e.target.value)}
-                        className="border rounded px-2 py-1"
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-gray-500">
+                      Created: {cause.createdAt ? new Date(cause.createdAt).toLocaleDateString() : '—'}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEdit(cause)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                        title="Edit cause"
                       >
-                        <option value="active">Active</option>
-                        <option value="completed">Completed</option>
-                        <option value="paused">Paused</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteCause(cause._id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                        title="Delete cause"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-        
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600">
-              Total Causes: {causes.length}
-            </div>
-            <div className="text-sm text-gray-600">
-              Active: {causes.filter(c => c.status === 'active').length} | 
-              Completed: {causes.filter(c => c.status === 'completed').length} | 
-              Paused: {causes.filter(c => c.status === 'paused').length} | 
-              Cancelled: {causes.filter(c => c.status === 'cancelled').length}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

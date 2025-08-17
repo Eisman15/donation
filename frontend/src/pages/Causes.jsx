@@ -60,35 +60,31 @@ const Causes = () => {
             <div key={cause._id} className="bg-white rounded-lg shadow-md overflow-hidden">
               {cause.image && (
                 <div className="h-48 overflow-hidden">
-                  <img 
-                    src={cause.image} 
+                  <img
+                    src={cause.image}
                     alt={cause.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
               )}
+
               <div className="p-6">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-semibold">{cause.title}</h3>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    cause.status === 'active' ? 'bg-green-100 text-green-800' :
-                    cause.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                    cause.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {cause.status.charAt(0).toUpperCase() + cause.status.slice(1)}
-                  </span>
-                </div>
+                <h3 className="text-xl font-semibold mb-2">{cause.title}</h3>
+
                 <p className="text-gray-600 mb-4">{cause.description}</p>
+
                 <div className="mb-4">
                   <div className="flex justify-between text-sm mb-1">
                     <span>Target Amount</span>
-                    <span className="font-semibold">${(cause.targetAmount || cause.goalAmount || 0).toLocaleString()}</span>
+                    <span className="font-semibold">
+                      ${(cause.targetAmount || cause.goalAmount || 0).toLocaleString()}
+                    </span>
                   </div>
                 </div>
+
                 <div className="flex justify-between items-center">
                   <div className="text-xs text-gray-500">
-                    Created: {new Date(cause.createdAt).toLocaleDateString()}
+                    Created: {cause.createdAt ? new Date(cause.createdAt).toLocaleDateString() : '—'}
                   </div>
                   <button
                     onClick={() => handleSupport(cause)}
