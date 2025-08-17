@@ -74,7 +74,6 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Gradient header (matches Login / Causes pages) */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white">
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-5xl font-bold mb-3">Create your account</h1>
@@ -84,7 +83,6 @@ const Register = () => {
         </div>
       </div>
 
-      {/* Card */}
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto -mt-12 mb-10">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
