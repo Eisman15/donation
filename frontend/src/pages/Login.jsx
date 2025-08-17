@@ -43,7 +43,7 @@ const Login = () => {
     try {
       const response = await axiosInstance.post('/api/auth/login', formData);
       login(response.data);
-      navigate('/tasks');
+      navigate('/', { replace: true });
     } catch (error) {
       if (error.response?.status === 401) {
         setErrors({ general: 'Invalid email or password. Please try again.' });
