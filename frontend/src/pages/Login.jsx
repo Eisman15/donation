@@ -42,7 +42,7 @@ const Login = () => {
 
     try {
       const response = await axiosInstance.post('/api/auth/login', formData);
-      login(response.data);
+   login(response.data);
 +      navigate('/', { replace: true });
     } catch (error) {
       if (error.response?.status === 401) {
