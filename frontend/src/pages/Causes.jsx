@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { getCauses } from '../services/causeService';
 
 const Causes = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [causes, setCauses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,6 +22,14 @@ const Causes = () => {
       setError('Failed to load causes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSupport = (cause) => {
+    if (!user) {
+      navigate('/login', { state: { from: `/causes/${cause._id}` } });
+    } else {
+      navigate(`/donate/${cause._id}`);
     }
   };
 
@@ -74,8 +86,16 @@ const Causes = () => {
                     <span className="font-semibold">${(cause.targetAmount || cause.goalAmount || 0).toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="text-xs text-gray-500">
-                  Created: {new Date(cause.createdAt).toLocaleDateString()}
+                <div className="flex justify-between items-center">
+                  <div className="text-xs text-gray-500">
+                    Created: {new Date(cause.createdAt).toLocaleDateString()}
+                  </div>
+                  <button
+                    onClick={() => handleSupport(cause)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  >
+                    {user ? 'Donate Now' : 'Support Cause'}
+                  </button>
                 </div>
               </div>
             </div>
