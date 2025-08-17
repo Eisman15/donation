@@ -66,12 +66,7 @@ const Home = () => {
                   >
                     Browse Causes
                   </Link>
-                  <Link 
-                    to="/causes" 
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300"
-                  >
-                    Create Campaign
-                  </Link>
+           
                 </>
               ) : (
                 <>
