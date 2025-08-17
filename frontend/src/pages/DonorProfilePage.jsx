@@ -35,7 +35,6 @@ const DonorProfilePage = () => {
             });
             setDonorProfile(donorResponse.data);
           } catch (donorError) {
-            // Donor profile not found - this is expected for new users
           }
         }
       } catch (error) {
