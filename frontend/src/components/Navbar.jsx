@@ -36,12 +36,6 @@ const Navbar = () => {
                   Profile
                 </Link>
                 
-                {(user.role === 'donor' || user.role === 'admin') && (
-                  <Link to="/donor-profile" className={isActive('/donor-profile') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>
-                    Donor
-                  </Link>
-                )}
-                
                 {user.role === 'admin' && (
                   <>
                     <Link to="/donors" className={isActive('/donors') ? 'bg-blue-800 px-3 py-2 rounded' : 'hover:bg-blue-500 px-3 py-2 rounded'}>

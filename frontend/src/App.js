@@ -3,10 +3,9 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Profile from './pages/Profile';
+import DonorProfilePage from './pages/DonorProfilePage';
 import Causes from './pages/Causes';
 import AllDonors from './pages/AllDonors';
-import DonorProfilePage from './pages/DonorProfilePage';
 import AdminCauses from './pages/AdminCauses';
 
 function App() {
@@ -17,10 +16,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<DonorProfilePage />} />
         <Route path="/causes" element={<Causes />} />
         <Route path="/donors" element={<AllDonors />} />
-        <Route path="/donor-profile" element={<DonorProfilePage />} />
         <Route path="/admin-causes" element={<AdminCauses />} />
       </Routes>
     </Router>
