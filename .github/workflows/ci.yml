@@ -1,0 +1,70 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: [self-hosted, Linux, X64]
+
+    strategy:
+      matrix:
+        node-version: [22]
+
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PORT: ${{ secrets.PORT }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn' 
+
+      - name: Show secrets are present (not printing values)
+        run: |
+          [ -n "$MONGO_URI" ] && echo "MONGO_URI present" || echo "MONGO_URI missing"
+          [ -n "$JWT_SECRET" ] && echo "JWT_SECRET present" || echo "JWT_SECRET missing"
+          [ -n "$PORT" ] && echo "PORT present" || echo "PORT missing"
+
+      - name: Enable corepack (for Yarn)
+        run: corepack enable || true
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          yarn install --frozen-lockfile || npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          df -h
+          rm -rf ./build
+          yarn install --frozen-lockfile || npm ci
+          yarn build || npm run build
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: |
+          npm test || yarn test
+
+      - name: Prepare .env for backend (if needed)
+        working-directory: ./backend
+        run: |
+          printf "MONGO_URI=%s\nJWT_SECRET=%s\nPORT=%s\n" "$MONGO_URI" "$JWT_SECRET" "$PORT" > .env
+
+      - name: Stop any pm2 processes (optional)
+        run: pm2 stop all || true
+
+      - name: Start pm2 processes (optional)
+        run: pm2 start ecosystem.config.js || pm2 start all || true
