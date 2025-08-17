@@ -27,7 +27,6 @@ const AllDonors = () => {
     };
 
     if (user) fetchDonors();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const deleteDonor = async (id) => {

@@ -108,7 +108,7 @@ const updateUserProfile = async (req, res) => {
 // Create admin user (should be protected and used only for initial setup)
 const createAdmin = async (req, res) => {
     const { name, email, password, adminSecret } = req.body;
-    
+    1
     // Check admin secret (you should set this in environment variables)
     if (adminSecret !== process.env.ADMIN_SECRET) {
         return res.status(403).json({ message: 'Invalid admin secret' });
