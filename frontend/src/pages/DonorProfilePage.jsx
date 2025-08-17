@@ -200,12 +200,7 @@ const DonorProfilePage = () => {
                   <p><strong>Status:</strong> Active</p>
                 </div>
                 
-                <div className="bg-gray-50 p-4">
-                  <h3 className="font-bold mb-3">Preferences</h3>
-                  <p><strong>Visibility:</strong> {donorProfile?.preferences?.isAnonymous ? 'Anonymous' : 'Public'}</p>
-                  <p><strong>Email Notifications:</strong> {donorProfile?.preferences?.emailNotifications !== false ? 'Enabled' : 'Disabled'}</p>
-                  <p><strong>Newsletter:</strong> {donorProfile?.preferences?.newsletter !== false ? 'Subscribed' : 'Unsubscribed'}</p>
-                </div>
+               
               </div>
 
               <div className="mt-6">
