@@ -26,7 +26,25 @@ const getCauses = async (req, res) => {
   }
 };
 
+const updateCause = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    const cause = await Cause.findByIdAndUpdate(id, updates, { new: true });
+    
+    if (!cause) {
+      return res.status(404).json({ message: 'Cause not found' });
+    }
+    
+    res.json(cause);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createCause,
-  getCauses
+  getCauses,
+  updateCause
 };

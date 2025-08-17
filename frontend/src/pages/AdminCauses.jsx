@@ -34,7 +34,7 @@ const AdminCauses = () => {
     e.preventDefault();
     try {
       const response = await axiosInstance.post('/api/causes', newCause, {
-        headers: { Authorization: `Bearer ${user.token}` },
+        headers: { Authorization: `Bearer ${user?.token}` },
       });
       setCauses([response.data, ...causes]);
       setNewCause({ title: '', description: '', targetAmount: '' });
@@ -47,7 +47,7 @@ const AdminCauses = () => {
   const updateStatus = async (id, status) => {
     try {
       await axiosInstance.put(`/api/causes/${id}`, { status }, {
-        headers: { Authorization: `Bearer ${user.token}` }
+        headers: { Authorization: `Bearer ${user?.token}` }
       });
       setCauses(causes.map(c => c._id === id ? { ...c, status } : c));
     } catch (error) {
@@ -139,11 +139,11 @@ const AdminCauses = () => {
                     <td className="px-6 py-4">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{cause.title}</div>
-                        <div className="text-sm text-gray-500">{cause.description.substring(0, 100)}...</div>
+                        <div className="text-sm text-gray-500">{(cause.description || '').substring(0, 100)}...</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${cause.targetAmount.toLocaleString()}
+                      ${(cause.targetAmount || cause.goalAmount || 0).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -152,15 +152,15 @@ const AdminCauses = () => {
                         cause.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {cause.status.charAt(0).toUpperCase() + cause.status.slice(1)}
+                        {(cause.status || 'unknown').charAt(0).toUpperCase() + (cause.status || 'unknown').slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(cause.createdAt).toLocaleDateString()}
+                      {cause.createdAt ? new Date(cause.createdAt).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <select
-                        value={cause.status}
+                        value={cause.status || 'active'}
                         onChange={(e) => updateStatus(cause._id, e.target.value)}
                         className="border rounded px-2 py-1"
                       >
