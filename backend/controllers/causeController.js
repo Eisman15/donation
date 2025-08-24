@@ -1,50 +1,69 @@
+// controllers/causeController.js
+const mongoose = require('mongoose');
 const Cause = require('../models/Cause');
+let Donation;
+try { Donation = require('../models/Donation'); } catch (_) {} // optional
 
-const createCause = async (req, res) => {
-  try {
-    const { title, description, targetAmount, status } = req.body;
-    
-    const cause = await Cause.create({
-      title,
-      description,
-      targetAmount,
-      status
-    });
-    
-    res.status(201).json(cause);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+// ... your existing createCause, getCauses, updateCause
+
+// Hard delete a cause (optional ?cascade=true to remove linked donations)
+const deleteCause = async (req, res) => {
+  const { id } = req.params;
+  const cascade = req.query.cascade === 'true';
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid cause id' });
   }
-};
 
-const getCauses = async (req, res) => {
-  try {
-    const causes = await Cause.find();
-    res.json(causes);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  const cause = await Cause.findById(id);
+  if (!cause) return res.status(404).json({ message: 'Cause not found' });
 
-const updateCause = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
-    
-    const cause = await Cause.findByIdAndUpdate(id, updates, { new: true });
-    
-    if (!cause) {
-      return res.status(404).json({ message: 'Cause not found' });
+  // Block delete if donations exist unless cascade=true
+  if (Donation) {
+    const donationCount = await Donation.countDocuments({ cause: id }).catch(() => 0);
+    if (donationCount > 0 && !cascade) {
+      return res.status(409).json({
+        message: 'Cannot delete cause with existing donations. Add ?cascade=true to also delete those donations.'
+      });
     }
-    
-    res.json(cause);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
+
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      if (Donation && cascade) {
+        await Donation.deleteMany({ cause: id }, { session });
+      }
+      await Cause.deleteOne({ _id: id }, { session });
+    });
+    return res.status(204).end(); // No Content
+  } catch (err) {
+    console.error('deleteCause error:', err);
+    return res.status(500).json({ message: 'Failed to delete cause' });
+  } finally {
+    session.endSession();
+  }
+};
+
+// Soft delete / archive (sets status instead of removing)
+const archiveCause = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid cause id' });
+  }
+  const cause = await Cause.findByIdAndUpdate(
+    id,
+    { status: 'archived' }, // or 'inactive' if that’s your enum
+    { new: true }
+  );
+  if (!cause) return res.status(404).json({ message: 'Cause not found' });
+  return res.json(cause);
 };
 
 module.exports = {
   createCause,
   getCauses,
-  updateCause
+  updateCause,
+  deleteCause   
+ 
 };
