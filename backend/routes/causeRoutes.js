@@ -1,11 +1,16 @@
+
 const express = require('express');
-const { createCause, getCauses, updateCause } = require('../controllers/causeController');
-const { protect } = require('../middleware/authMiddleware');
-
 const router = express.Router();
+const { createCause, getCauses, updateCause, deleteCause, archiveCause } = require('../controllers/causeController');
+const { protect } = require('../middleware/authMiddleware');
+const { adminOnly } = require('../middleware/adminMiddleware');
 
-router.post('/', createCause);
+
 router.get('/', getCauses);
-router.put('/:id', protect, updateCause);
+
+// admin actions
+router.post('/', protect, adminOnly, createCause);
+router.put('/:id', protect, adminOnly, updateCause);
+router.delete('/:id', protect, adminOnly, deleteCause);      
 
 module.exports = router;

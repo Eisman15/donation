@@ -2,16 +2,24 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
+// This component creates the navigation bar at the top of every page
 const Navbar = () => {
+  // Get user info and logout function from auth context
   const { user, logout } = useAuth();
+  // Hook to navigate to different pages
   const navigate = useNavigate();
+  // Hook to know which page we're currently on
   const location = useLocation();
 
+  // Function that runs when user clicks logout button
   const handleLogout = () => {
+    // Clear user session
     logout();
+    // Send user back to login page
     navigate('/login');
   };
 
+  // Helper function to check if we're on a specific page (for highlighting nav links)
   const isActive = (path) => location.pathname === path;
 
   return (

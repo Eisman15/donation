@@ -59,7 +59,7 @@ const AllDonors = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Header (matches Manage Causes) */}
+
       <div className="bg-blue-500 text-white py-8">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-3xl font-bold mb-2">All Donors</h1>
