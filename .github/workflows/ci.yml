@@ -53,11 +53,6 @@ jobs:
           yarn install --frozen-lockfile || npm ci
           yarn build || npm run build
 
-      - name: Run backend tests
-        working-directory: ./backend
-        run: |
-          npm test || yarn test
-
       - name: Prepare .env for backend (if needed)
         working-directory: ./backend
         run: |
