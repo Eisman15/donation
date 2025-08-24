@@ -18,7 +18,6 @@ const AdminCauses = () => {
     image: '',
   });
 
-  const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
   const asNumber = (v) => {
     const n = Number.parseFloat(v);
     return Number.isFinite(n) ? n : 0;
@@ -26,6 +25,7 @@ const AdminCauses = () => {
 
   useEffect(() => {
     if (!user) return;
+    const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
     const fetchCauses = async () => {
       try {
         const res = await axiosInstance.get('/api/causes', { headers: authHeader });
@@ -50,6 +50,7 @@ const AdminCauses = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     setError('');
+    const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
     const payload = {
       title: newCause.title.trim(),
       description: newCause.description.trim(),
@@ -72,6 +73,7 @@ const AdminCauses = () => {
 
   const deleteCause = async (id) => {
     if (!window.confirm('Delete this cause?')) return;
+    const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
     try {
       await axiosInstance.delete(`/api/causes/${id}`, { headers: authHeader });
       setCauses((prev) => prev.filter((c) => c._id !== id));

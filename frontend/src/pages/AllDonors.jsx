@@ -8,10 +8,9 @@ const AllDonors = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
-
   useEffect(() => {
     const fetchDonors = async () => {
+      const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
       try {
         const response = await axiosInstance.get('/api/donors', { headers: authHeader });
         setDonors(Array.isArray(response.data) ? response.data : []);
@@ -31,6 +30,7 @@ const AllDonors = () => {
 
   const deleteDonor = async (id) => {
     if (!window.confirm('Delete this donor?')) return;
+    const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
     try {
       await axiosInstance.delete(`/api/donors/${id}`, { headers: authHeader });
       setDonors((prev) => prev.filter((d) => d._id !== id));

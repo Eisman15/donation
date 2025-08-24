@@ -5,29 +5,6 @@ import Logo from '../components/Logo';
 const Home = () => {
   const { user } = useAuth();
 
-  const features = [
-    {
-      icon: "🎯",
-      title: "Discover Meaningful Causes",
-      description: "Browse campaigns that matter to you and your community. Every cause has the potential to create real change."
-    },
-    {
-      icon: "💝",
-      title: "Easy Donations",
-      description: "Support causes you care about with secure, simple donations. Every contribution makes a difference."
-    },
-    {
-      icon: "📊",
-      title: "Track Progress",
-      description: "See real-time updates on donation goals and campaign progress. Transparency is our priority."
-    },
-    {
-      icon: "🌍",
-      title: "Global Impact",
-      description: "Connect with causes worldwide. From local community projects to global initiatives."
-    }
-  ];
-
 
   return (
     <div className="min-h-screen bg-white">
