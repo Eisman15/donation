@@ -112,10 +112,29 @@ const getDonorById = async (req, res) => {
   }
 };
 
+const deleteDonor = async (req, res) => {
+  try {
+    const donor = await Donor.findByIdAndDelete(req.params.id);
+    
+    if (!donor) {
+      return res.status(404).json({ message: 'Donor not found' });
+    }
+    
+    if (donor.user) {
+      await User.findByIdAndUpdate(donor.user, { role: 'user' });
+    }
+    
+    res.json({ message: 'Donor deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createDonorProfile,
   getDonorProfile,
   updateDonorProfile,
   getAllDonors,
-  getDonorById
+  getDonorById,
+  deleteDonor
 };

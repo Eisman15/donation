@@ -4,7 +4,8 @@ const {
   getDonorProfile, 
   updateDonorProfile,
   getAllDonors,
-  getDonorById
+  getDonorById,
+  deleteDonor
 } = require('../controllers/donorController');
 const { protect } = require('../middleware/authMiddleware');
 const { adminOnly, donorOrAdmin } = require('../middleware/adminMiddleware');
@@ -19,5 +20,6 @@ router.put('/profile', protect, donorOrAdmin, updateDonorProfile);
 // Admin routes - manage all donors
 router.get('/', protect, adminOnly, getAllDonors);
 router.get('/:id', protect, adminOnly, getDonorById);
+router.delete('/:id', protect, adminOnly, deleteDonor);
 
 module.exports = router;

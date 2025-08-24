@@ -43,8 +43,25 @@ const updateCause = async (req, res) => {
   }
 };
 
+const deleteCause = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const cause = await Cause.findByIdAndDelete(id);
+    
+    if (!cause) {
+      return res.status(404).json({ message: 'Cause not found' });
+    }
+    
+    res.json({ message: 'Cause deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createCause,
   getCauses,
-  updateCause
+  updateCause,
+  deleteCause
 };
