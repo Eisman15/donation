@@ -11,6 +11,7 @@ const AdminCauses = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editingCause, setEditingCause] = useState(null);
   const [newCause, setNewCause] = useState({
     title: '',
     description: '',
@@ -67,9 +68,41 @@ const AdminCauses = () => {
     }
   };
 
-  const handleEdit = (cause) => {
-    navigate(`/admin/causes/${cause._id}/edit`, { state: { cause } });
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setError('');
+    const authHeader = user?.token ? { Authorization: `Bearer ${user.token}` } : {};
+    const payload = {
+      title: editingCause.title.trim(),
+      description: editingCause.description.trim(),
+      image: editingCause.image?.trim() || undefined,
+      targetAmount: asNumber(editingCause.targetAmount),
+    };
+    try {
+      const res = await axiosInstance.put(`/api/causes/${editingCause._id}`, payload, { headers: authHeader });
+      setCauses((prev) => prev.map((c) => c._id === editingCause._id ? res.data : c));
+      setEditingCause(null);
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to update cause.');
+    }
   };
+
+  const startEdit = (cause) => {
+    setEditingCause({
+      _id: cause._id,
+      title: cause.title,
+      description: cause.description,
+      targetAmount: cause.targetAmount?.toString() || '',
+      image: cause.image || '',
+    });
+    setShowForm(false);
+  };
+
+  const cancelEdit = () => {
+    setEditingCause(null);
+  };
+
+
 
   const deleteCause = async (id) => {
     if (!window.confirm('Delete this cause?')) return;
@@ -91,9 +124,9 @@ const AdminCauses = () => {
           <div className="text-center">
             <h1 className="text-5xl font-bold mb-4">Manage Causes</h1>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Create, edit, and remove causes shown to donors.
+              Create and remove causes shown to donors.
             </p>
-            <p className="text-lg">Total Causes: {causes.length}</p>
+           
           </div>
         </div>
       </div>
@@ -117,6 +150,7 @@ const AdminCauses = () => {
         {showForm && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
             <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Create New Cause</h3>
               <form onSubmit={handleCreate}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <input
@@ -159,6 +193,66 @@ const AdminCauses = () => {
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                   >
                     Create
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {editingCause && (
+          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Edit Cause</h3>
+              <form onSubmit={handleUpdate}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={editingCause.title}
+                    onChange={(e) => setEditingCause((c) => ({ ...c, title: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                  <input
+                    type="number"
+                    placeholder="Target Amount"
+                    value={editingCause.targetAmount}
+                    onChange={(e) => setEditingCause((c) => ({ ...c, targetAmount: e.target.value }))}
+                    className="w-full p-2 border rounded"
+                    step="0.01"
+                    min="0"
+                    required
+                  />
+                  <input
+                    type="url"
+                    placeholder="Image URL (optional)"
+                    value={editingCause.image}
+                    onChange={(e) => setEditingCause((c) => ({ ...c, image: e.target.value }))}
+                    className="w-full p-2 border rounded md:col-span-2"
+                  />
+                </div>
+                <textarea
+                  placeholder="Description"
+                  value={editingCause.description}
+                  onChange={(e) => setEditingCause((c) => ({ ...c, description: e.target.value }))}
+                  className="w-full p-2 border rounded mb-4"
+                  rows={3}
+                  required
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  >
+                    Update
                   </button>
                 </div>
               </form>
@@ -211,8 +305,8 @@ const AdminCauses = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleEdit(cause)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                        onClick={() => startEdit(cause)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                         title="Edit cause"
                       >
                         Edit

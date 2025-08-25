@@ -26,12 +26,19 @@ const getCauses = async (req, res) => {
   }
 };
 
+
+
 const updateCause = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const { title, description, targetAmount, status } = req.body;
     
-    const cause = await Cause.findByIdAndUpdate(id, updates, { new: true });
+    const cause = await Cause.findByIdAndUpdate(id, {
+      title,
+      description,
+      targetAmount,
+      status
+    }, { new: true });
     
     if (!cause) {
       return res.status(404).json({ message: 'Cause not found' });

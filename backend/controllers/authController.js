@@ -1,4 +1,3 @@
-
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -105,11 +104,11 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
-// Create admin user (should be protected and used only for initial setup)
+// Create admin user - used only for initial setup)
 const createAdmin = async (req, res) => {
     const { name, email, password, adminSecret } = req.body;
-    1
-    // Check admin secret (you should set this in environment variables)
+    
+    // Check admin secret 
     if (adminSecret !== process.env.ADMIN_SECRET) {
         return res.status(403).json({ message: 'Invalid admin secret' });
     }
@@ -137,4 +136,94 @@ const createAdmin = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, updateUserProfile, getProfile, createAdmin };
+// Admin: Get all users
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch users' });
+    }
+};
+
+// Admin: Get user by ID
+const getUserById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch user' });
+    }
+};
+
+// Admin: Update user
+const updateUserByAdmin = async (req, res) => {
+    try {
+        const { name, email, role, affiliation, address } = req.body;
+        const user = await User.findById(req.params.id);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if email is being changed and if it's already taken
+        if (email && email !== user.email) {
+            const emailExists = await User.findOne({ email: email.toLowerCase() });
+            if (emailExists) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+            user.email = email.toLowerCase().trim();
+        }
+
+        // Update other fields
+        if (name !== undefined) user.name = name.trim();
+        if (role !== undefined) user.role = role;
+        if (affiliation !== undefined) user.affiliation = affiliation;
+        if (address !== undefined) user.address = address;
+
+        const updatedUser = await user.save();
+        
+        // Return user without password
+        const userResponse = updatedUser.toObject();
+        delete userResponse.password;
+        
+        res.json(userResponse);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update user' });
+    }
+};
+
+// Admin: Delete user
+const deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Prevent admin from deleting themselves
+        if (user._id.toString() === req.user.id.toString()) {
+            return res.status(400).json({ message: 'Cannot delete your own account' });
+        }
+
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to delete user' });
+    }
+};
+
+module.exports = { 
+    registerUser, 
+    loginUser, 
+    updateUserProfile, 
+    getProfile, 
+    createAdmin,
+    getAllUsers,
+    getUserById,
+    updateUserByAdmin,
+    deleteUser
+};

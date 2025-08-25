@@ -6,6 +6,7 @@ const Home = () => {
   const { user } = useAuth();
 
 
+
   return (
     <div className="min-h-screen bg-white">
       <section className="relative bg-blue-600 text-white overflow-hidden">
